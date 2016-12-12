@@ -53,50 +53,39 @@ var server = http.createServer(function (request, response){
         // response.write('');
         // response.end();
     }
-
   }
-    // see what URL the clients are requesting:
-    // console.log('~!~!~!~!~!~!~!~!~!~!~!~!~!~!~!~!~!~!~!~!~!~')
-    // console.log('client request URL: ', request.url);
-    // console.log(request);
-    // console.log('~!~!~!~!~!~!~!~!~!~!~!~!~!~!~!~!~!~!~!~!~!~')
-    // this is how we do routing:
-    if(request.url === '/') {
-        fs.readFile('index.html', 'utf8', function (errors, contents){
-            response.writeHead(200, {'Content-Type': 'text/html'});  // send data about response
-            response.write(contents);  //  send response body
-            response.end(); // finished!
-        });
+  if(request.url === '/') {
+      fs.readFile('index.html', 'utf8', function (errors, contents){
+        response.writeHead(200, {'Content-Type': 'text/html'});  // send data about response
+        response.write(contents);  //  send response body
+        response.end(); // finished!
+      });
+  }
+  else{
+    var pFN = request.url.match(pathFileName());
+    if (pFN == null || pFN[0].indexOf('.') == -1){
+      // no filename present, so
+      // we're looking for a route instead of a file to serve
+      switch (request.url) {
+        case '/cars':
+        case '/cars/':
+          writeResp('.html', '/cars.html', response);
+          break;
+        case '/cats':
+        case '/cats/':
+          writeResp('.html', '/cats.html', response);
+          break;
+        default:
+          myReadFile("", 404, 'utf-8', 'text/html');
+      }
     }
     else{
-      var pFN = request.url.match(pathFileName());
-      console.log(pFN)
-      if (pFN == null || pFN[0].indexOf('.') == -1){
-        // no filename present, so
-        // we're looking for a route instead of a file to serve
-        console.log("parse for route not file")
-        switch (pFN[0]) {
-          case 'cars':
-          case 'cars/':
-            writeResp('.html', '/cars.html', response);
-            break;
-          case 'cats':
-          case 'cats/':
-            writeResp('.html', '/cats.html', response);
-            break;
-          default:
-            myReadFile("", 404, 'utf-8', 'text/html');
-        }
-      }
-      else{
-        // remove filename from path
-        var path=pFN.input.slice(0,pFN.index);
-        console.log(path)
-        var fileExt = /\..*/.exec(pFN[0])
-        console.log(fileExt,pFN.input)
-        writeResp(fileExt[0], pFN.input, response);
-      }
+      // remove filename from path
+      var path=pFN.input.slice(0,pFN.index);
+      var fileExt = /\..*/.exec(pFN[0])
+      writeResp(fileExt[0], pFN.input, response);
     }
+  }
 });
 // tell your server which port to run on
 server.listen(7077);
